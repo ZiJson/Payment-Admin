@@ -2,11 +2,17 @@
 import { env } from '~/env'
 import * as crypto from 'crypto'
 import path from 'path'
+import type { FetchLineRequestApiType, FetchLineConfirmApiType } from './type'
 
 const BASE_URL_SANDBOX = 'https://sandbox-api-pay.line.me'
 const BASE_URL = 'https://api-pay.line.me'
 const REQUEST_URL = '/v3/payments/request'
 const COMFIRM_URL = '/v3/payments/{transactionId}/confirm'
+
+const REDIRECT_URL = {
+    confirmUrl: 'http://localhost:3000/api',
+    cancelUrl: 'http://localhost:3000/api',
+}
 
 const getSignature = (url: string, body: string, nonce: crypto.UUID) => {
     const signature = crypto
@@ -16,9 +22,9 @@ const getSignature = (url: string, body: string, nonce: crypto.UUID) => {
     return signature
 }
 
-const fetchLineRequestApi = async (payload: object) => {
+const fetchLineRequestApi = async (payload: FetchLineRequestApiType) => {
     const nonce = crypto.randomUUID()
-    const body = JSON.stringify(payload)
+    const body = JSON.stringify({ ...payload })
     const signature = getSignature(REQUEST_URL, body, nonce)
     console.log(signature)
     const res = await fetch(new URL(REQUEST_URL, BASE_URL_SANDBOX).toString(), {
@@ -31,16 +37,16 @@ const fetchLineRequestApi = async (payload: object) => {
         },
         body,
     })
-    if (res.ok) console.log(await res.json())
+    if (res.ok) return await res.json()
 }
 
-const fetchLineConfirmApi = async (transactionId: string) => {
+const fetchLineConfirmApi = async (prop: FetchLineConfirmApiType) => {
+    const { amount, transactionId, currency } = prop
     const nonce = crypto.randomUUID()
     const urlPath = COMFIRM_URL.replace('{transactionId}', transactionId)
-    console.log(urlPath)
     const body = {
-        amount: 100,
-        currency: 'TWD',
+        amount,
+        currency,
     }
     const signature = getSignature(urlPath, JSON.stringify(body), nonce)
     const res = await fetch(new URL(urlPath, BASE_URL_SANDBOX).toString(), {

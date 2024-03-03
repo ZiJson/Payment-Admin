@@ -20,8 +20,8 @@ const payload = {
         },
     ],
     redirectUrls: {
-        confirmUrl: 'http://localhost:3000/payment/api',
-        cancelUrl: 'http://localhost:3000/payment/api',
+        confirmUrl: 'http://localhost:3000/api',
+        cancelUrl: 'http://localhost:3000/api',
     },
 }
 const Card = () => {
